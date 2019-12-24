@@ -32,12 +32,12 @@ Miscellaneous
 
 To install a package locally for development, run::
 
-    setl install [--python path/to/python] --editable
+    setl develop --python path/to/python
 
 All *build* commands are available via ``setl build``::
 
-    setl build [--python path/to/python] [--ext] [--py] [--clib] [--scripts]
+    setl build --python path/to/python [--ext] [--py] [--clib] [--scripts]
 
 To create package distributions (equivalent to ``flit build``), use::
 
-    setl dist [--python path/to/python] [--source] [--wheel]
+    setl dist --python path/to/python [--source] [--wheel]

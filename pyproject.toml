@@ -20,7 +20,7 @@ requires = [
 test = ["pytest"]
 
 [tool.flit.scripts]
-setl = "setl:main"
+setl = "setl.__main__:main"
 
 [tool.black]
 line-length = 79
