@@ -3,7 +3,7 @@ Setl
 ====
 
 Setl (pronounced like *settle*) is a simple way to work with PEP 518 projects
-with Setuptools ad the backend.
+with Setuptools as the backend.
 
 The interface is strongly influenced by Flit_. Currently a proof of concept.
 
