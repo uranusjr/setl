@@ -19,17 +19,18 @@ def _get_setuppy_args(root: pathlib.Path) -> Sequence[str]:
 
 
 class ProjectSetupMixin(BaseProject):
-    def _setuppy(self, env: BuildEnv, *args: str):
+    def setuppy(self, env: BuildEnv, *args: str):
         subprocess.check_call(
-            [os.fspath(env.interpreter), *_get_setuppy_args(self.root), *args],
+            [
+                os.fspath(env.interpreter),
+                *_get_setuppy_args(self.root),
+                *args,
+            ],
             cwd=self.root,
         )
 
     def build(self, env: BuildEnv, steps: Sequence[str]):
-        self._setuppy(env, *steps)
+        self.setuppy(env, *steps)
 
     def clean(self, env: BuildEnv):
-        self._setuppy(env, "clean")
-
-    def install_for_development(self, env: BuildEnv):
-        self._setuppy(env, "develop")
+        self.setuppy(env, "clean")
