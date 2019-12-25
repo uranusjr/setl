@@ -23,5 +23,12 @@ class ProjectSetupMixin(BaseProject):
         self._setuppy(env, "clean")
 
     def install_for_development(self, env: BuildEnv):
-        # TODO: Switch to use `pip install -e` instead? Or something else?
-        self._setuppy(env, "develop")
+        args = [
+            os.fspath(env.interpreter),
+            "-m",
+            "pip",
+            "install",
+            "--editable",
+            ".",
+        ]
+        subprocess.check_call(args, cwd=self.root)
