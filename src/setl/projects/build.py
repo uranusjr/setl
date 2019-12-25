@@ -84,8 +84,6 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
             "-m",
             "pip",
             "install",
-            "--upgrade",
-            "--quiet",
             "--prefix",
             os.fspath(env.root),
             *reqs,
