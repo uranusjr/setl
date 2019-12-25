@@ -10,7 +10,7 @@ from typing import List, Optional
 from setl._logging import configure_logging
 from setl.projects import Project
 
-from . import build, clean, develop
+from . import build, clean, develop, dist
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -20,8 +20,8 @@ def get_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers()
-    for sub in [build, clean, develop]:
-        sub.get_parser(subparsers)
+    for sub in [build, clean, develop, dist]:
+        sub.get_parser(subparsers)  # type: ignore
 
     return parser
 

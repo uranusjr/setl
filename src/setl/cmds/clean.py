@@ -4,6 +4,7 @@ import argparse
 def _handle(project, options) -> int:
     with project.ensure_build_envdir(options.python) as _:
         project.clean()
+    return 0
 
 
 def get_parser(subparsers) -> argparse.ArgumentParser:

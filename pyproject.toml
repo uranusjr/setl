@@ -3,5 +3,5 @@ requires = ["setuptools", "wheel"]
 
 [tool.black]
 line-length = 79
-target-version = ["py37"]
+target-version = ["py38"]
 include = '^/(src|tests)/.+\.py$'

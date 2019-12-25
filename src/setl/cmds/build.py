@@ -19,6 +19,8 @@ def _handle(project, options) -> int:
         project.ensure_build_requirements(env)
         project.build(s.value for s in steps)
 
+    return 0
+
 
 def get_parser(subparsers) -> argparse.ArgumentParser:
     parser = subparsers.add_parser("build", description="Build the package")

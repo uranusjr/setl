@@ -15,7 +15,7 @@ _DEFAULT_BUILD_SYSTEM = {
 
 
 class ProjectMetadataMixin(BaseProject):
-    @functools.cached_property
+    @functools.cached_property  # type: ignore  # Mypy does not have this yet.
     def build_system(self):
         with self.root.joinpath("pyproject.toml").open() as f:
             data = toml.load(f)

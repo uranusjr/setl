@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["ProjectBuildManagementMixin"]
+__all__ = ["BuildEnv", "ProjectBuildManagementMixin"]
 
 import dataclasses
 import os
@@ -9,10 +9,10 @@ import subprocess
 import sys
 import sysconfig
 
-from typing import Optional
+from typing import Iterable, Optional
 
 from ._envs import get_interpreter_quintuplet, resolve_python
-from .base import BaseProject
+from .meta import ProjectMetadataMixin
 
 
 @dataclasses.dataclass()
@@ -28,7 +28,7 @@ def _join_paths(*paths: Optional[str]) -> str:
 
 
 @dataclasses.dataclass()
-class BuildEnvironment:
+class BuildEnv:
     """Context manager to install build deps in a simple temporary environment.
 
     Based on ``pep517.envbuild.BuildEnvironment``, which is in turn based on
@@ -38,7 +38,7 @@ class BuildEnvironment:
 
     root: pathlib.Path
 
-    def __enter__(self) -> BuildEnvironment:
+    def __enter__(self) -> BuildEnv:
         self.backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
 
         base = os.fspath(self.root)
@@ -61,8 +61,8 @@ class BuildEnvironment:
                 os.environ[k] = v
 
 
-class ProjectBuildManagementMixin(BaseProject):
-    def ensure_build_envdir(self, interpreter_spec: str) -> BuildEnvironment:
+class ProjectBuildManagementMixin(ProjectMetadataMixin):
+    def ensure_build_envdir(self, interpreter_spec: str) -> BuildEnv:
         """Ensure an isolated environment exists for build.
 
         :param interpreter_spec: Specification of the base interpreter.
@@ -74,12 +74,10 @@ class ProjectBuildManagementMixin(BaseProject):
         quintuplet = get_interpreter_quintuplet(python)
         env_dir = self.root.joinpath("build", _ENV_CONTAINER_NAME, quintuplet)
         env_dir.mkdir(exist_ok=True, parents=True)
-        return BuildEnvironment(env_dir)
+        return BuildEnv(env_dir)
 
-    def ensure_build_requirements(self, env: BuildEnvironment):
-        """Ensure the given environment has build requirements populated.
-        """
-        command = [
+    def install_build_requirements(self, env: BuildEnv, reqs: Iterable[str]):
+        args = [
             sys.executable,
             "-m",
             "pip",
@@ -87,9 +85,14 @@ class ProjectBuildManagementMixin(BaseProject):
             "--upgrade",
             "--quiet",
             "--prefix",
-            env.root,
+            os.fspath(env.root),
+            *reqs,
         ]
-        subprocess.check_call(command + self.build_requirements)
+        subprocess.check_call(args)
 
+    def ensure_build_requirements(self, env: BuildEnv):
+        """Ensure the given environment has build requirements populated.
+        """
+        self.install_build_requirements(env, self.build_requirements)
         # TODO: We might need to install things to build for development?
         # PEP 517 does not cover this yet, so we just do nothing for now.
