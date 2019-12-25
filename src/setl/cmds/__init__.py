@@ -33,7 +33,7 @@ def _find_active_venv_python() -> Optional[pathlib.Path]:
         prefix = python.relative_to(virtual_env)
     except ValueError:
         return None
-    if prefix.samefile(virtual_env):
+    if pathlib.Path(virtual_env, prefix).samefile(python):
         return python
     return None
 
@@ -65,7 +65,7 @@ def _get_python_kwargs() -> Dict[str, Any]:
         or _find_installed_venv_python()
     )
     if default:
-        return {"default": default}
+        return {"default": os.fspath(default)}
     return {"required": True}
 
 
