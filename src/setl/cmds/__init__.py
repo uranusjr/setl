@@ -2,25 +2,33 @@ __all__ = ["dispatch"]
 
 import argparse
 import logging
+import os
 import pathlib
 import sys
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from setl._logging import configure_logging
 from setl.projects import Project
 
-from . import build, clean, develop, dist
+from . import build, clean, develop, dist, publish
+
+
+def _get_python_kwargs() -> Dict[str, Any]:
+    default_python = os.environ.get("SETL_PYTHON", "")
+    if not default_python:
+        return {"required": True}
+    return {"default": default_python}
 
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--python", required=True, help="Target Python executable",
+        "--python", help="Target Python executable", **_get_python_kwargs(),
     )
 
     subparsers = parser.add_subparsers()
-    for sub in [build, clean, develop, dist]:
+    for sub in [build, clean, develop, dist, publish]:
         sub.get_parser(subparsers)  # type: ignore
 
     return parser

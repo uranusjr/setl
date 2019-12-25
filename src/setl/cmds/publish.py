@@ -1,8 +1,11 @@
 import argparse
 import enum
 import os
+import pathlib
 import subprocess
 import sys
+
+from typing import List
 
 from setl.projects import Project
 
@@ -12,6 +15,11 @@ class Step(enum.Enum):
     wheel = Project.build_wheel
 
 
+def _twine(c: str, targets: List[pathlib.Path]):
+    args = [sys.executable, "-m", "twine", c, *(os.fspath(p) for p in targets)]
+    subprocess.check_call(args)
+
+
 def _handle(project, options) -> int:
     steps = options.steps
     if steps is None:
@@ -19,14 +27,13 @@ def _handle(project, options) -> int:
 
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
-        targets = [os.fspath(step(project, env)) for step in steps]
-
-    cmd = [sys.executable, "-m", "twine"]
+        targets = [step(project, env) for step in steps]
 
     if options.check:
-        subprocess.check_call(cmd + ["check", *targets])
+        print("Checking distribution integrity...")
+        _twine("check", targets)
 
-    subprocess.check_call(cmd + ["upload", *targets])
+    _twine("upload", targets)
 
     return 0
 

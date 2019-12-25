@@ -16,8 +16,11 @@ def _handle(project, options) -> int:
 
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
-        for step in steps:
-            step(project, env)
+        targets = [step(project, env) for step in steps]
+
+    print("Created distributions:")
+    for t in targets:
+        print(f"  - {t.name}")
 
     return 0
 

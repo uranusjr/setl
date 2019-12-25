@@ -9,7 +9,7 @@ import subprocess
 import sys
 import sysconfig
 
-from typing import Iterable, Optional
+from typing import Optional, Sequence
 
 from ._envs import get_interpreter_quintuplet, resolve_python
 from .meta import ProjectMetadataMixin
@@ -76,7 +76,9 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
         env_dir.mkdir(exist_ok=True, parents=True)
         return BuildEnv(env_dir)
 
-    def install_build_requirements(self, env: BuildEnv, reqs: Iterable[str]):
+    def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
+        if not reqs:
+            return
         args = [
             sys.executable,
             "-m",
