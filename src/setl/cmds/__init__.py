@@ -2,12 +2,15 @@ __all__ = ["dispatch"]
 
 import argparse
 import logging
+import pathlib
 import sys
 
 from typing import List, Optional
 
-from . import build
-from ._logging import configure_logging
+from setl._logging import configure_logging
+from setl.projects import Project
+
+from . import build, clean, develop
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -17,10 +20,22 @@ def get_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers()
-    for sub in [build]:
+    for sub in [build, clean, develop]:
         sub.get_parser(subparsers)
 
     return parser
+
+
+class _ProjectNotFound(Exception):
+    start: pathlib.Path
+
+
+def _find_project() -> Project:
+    start = pathlib.Path.cwd()
+    for path in start.joinpath("__placeholder__").parents:
+        if path.joinpath("pyproject.toml").is_file():
+            return Project(path)
+    raise _ProjectNotFound(start)
 
 
 def dispatch(argv: Optional[List[str]]) -> int:
@@ -30,4 +45,5 @@ def dispatch(argv: Optional[List[str]]) -> int:
         argv = sys.argv
     opts = get_parser().parse_args(argv)
 
-    return opts.func(opts)
+    project = _find_project()
+    return opts.func(project, opts)
