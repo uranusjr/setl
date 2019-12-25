@@ -19,23 +19,25 @@ Usage
 2. Create ``pyproject.toml`` and provide the needed `PEP 518`_ definitions. An
    empty file is sufficient if you want to use the default values.
 
-3. Run this command to upload your code to PyPI::
+3. Run this command to upload your code to PyPI (using ``--python`` to
+   specify the Python to build the package against)::
 
-        setl publish
+        setl --python path/to/python publish
 
 .. _`PEP 518`: https://www.python.org/dev/peps/pep-0518/
+
 
 Miscellaneous
 =============
 
 To install a package locally for development, run::
 
-    setl develop --python path/to/python
+    setl --python path/to/python develop
 
 All *build* commands are available via ``setl build``::
 
-    setl build --python path/to/python [--ext] [--py] [--clib] [--scripts]
+    setl --python path/to/python build [--ext] [--py] [--clib] [--scripts]
 
 To create package distributions (equivalent to ``flit build``), use::
 
-    setl dist --python path/to/python [--source] [--wheel]
+    setl --python path/to/python dist [--source] [--wheel]
