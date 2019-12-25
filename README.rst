@@ -34,7 +34,7 @@ To install a package locally for development, run::
 
     setl --python path/to/python develop
 
-(This is simply a wrapper to ``path/to/python -m pip install -e``.)
+(But ``path/to/python -m pip install --editable .`` is probably better.)
 
 All *build* commands are available via ``setl build``::
 
