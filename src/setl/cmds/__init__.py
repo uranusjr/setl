@@ -82,6 +82,21 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _is_project_root(p: pathlib.Path) -> bool:
+    """Check is a path marks a project's root directory.
+
+    A valid project needs:
+
+    * A pyproject.toml (because this is a PEP 517 tool).
+    * Either setup.py or setup.cfg (or both) so we can invoke Setuptools.
+    """
+    if not p.joinpath("pyproject.toml").is_file():
+        return False
+    if p.joinpath("setup.py").is_file() or p.joinpath("setup.cfg").is_file():
+        return True
+    return False
+
+
 class _ProjectNotFound(Exception):
     start: pathlib.Path
 
@@ -89,7 +104,7 @@ class _ProjectNotFound(Exception):
 def _find_project() -> Project:
     start = pathlib.Path.cwd()
     for path in start.joinpath("__placeholder__").parents:
-        if path.joinpath("pyproject.toml").is_file():
+        if _is_project_root(path):
             return Project(path)
     raise _ProjectNotFound(start)
 
