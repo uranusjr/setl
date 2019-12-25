@@ -1,26 +1,5 @@
 [build-system]
-requires = ["flit_core >=2,<3"]
-build-backend = "flit_core.buildapi"
-
-[tool.flit.metadata]
-author = "Tzu-ping Chung"
-author-email = "uranusjr@gmail.com"
-description-file = "README.rst"
-
-home-page = "https://github.com/uranusjr/setl"
-license = "ISC"
-
-module = "setl"
-requires-python = ">=3.7"
-requires = [
-    "twine",
-]
-
-[tool.flit.metadata.requires-extra]
-test = ["pytest"]
-
-[tool.flit.scripts]
-setl = "setl.__main__:main"
+requires = ["setuptools"]
 
 [tool.black]
 line-length = 79
