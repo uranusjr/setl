@@ -16,16 +16,14 @@ Usage
 1. Create a project with appropriate ``setup.py`` and/or ``setup.cfg`` metadata
    declarations.
 
-2. Create ``pyproject.toml`` and define the ``build-system`` table. It should
-   look something like this::
-
-        [build-system]
-        requires = ["setuptools", "wheel"]
-        build-backend = "setuptools.build_meta"
+2. Create ``pyproject.toml`` and provide the needed `PEP 518`_ definitions. An
+   empty file is sufficient if you want to use the default values.
 
 3. Run this command to upload your code to PyPI::
 
         setl publish
+
+.. _`PEP 518`: https://www.python.org/dev/peps/pep-0518/
 
 Miscellaneous
 =============
