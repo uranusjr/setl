@@ -4,6 +4,8 @@ import argparse
 import logging
 import os
 import pathlib
+import shutil
+import sys
 
 from typing import Any, Dict, List, Optional
 
@@ -13,11 +15,58 @@ from setl.projects import Project
 from . import build, clean, develop, dist, publish
 
 
+def _find_active_venv_python() -> Optional[pathlib.Path]:
+    """Find Python interpreter of the currently active virtual environment.
+
+    * A virtual environment should be active (via ``VIRTUAL_ENV``).
+    * The ``python`` command should resolve into an executable inside the
+      virtual environment.
+    """
+    virtual_env = os.environ.get("VIRTUAL_ENV")
+    if not virtual_env:
+        return None
+    command = shutil.which("python")
+    if not command:
+        return None
+    python = pathlib.Path(command)
+    try:
+        prefix = python.relative_to(virtual_env)
+    except ValueError:
+        return None
+    if prefix.samefile(virtual_env):
+        return python
+    return None
+
+
+def _find_installed_venv_python() -> Optional[pathlib.Path]:
+    # Venv: sys.prefix should be different from sys.base_prefix.
+    if sys.prefix != getattr(sys, "base_prefix", sys.prefix):
+        return pathlib.Path(sys.executable)
+    # Virtualenv: sys.real_prefix should be set.
+    if hasattr(sys, "real_prefix"):
+        return pathlib.Path(sys.executable)
+    # Nothing is set, this is global.
+    return None
+
+
 def _get_python_kwargs() -> Dict[str, Any]:
-    default_python = os.environ.get("SETL_PYTHON", "")
-    if not default_python:
-        return {"required": True}
-    return {"default": default_python}
+    """Additional flags for the ``--python`` option.
+
+    * If the ``SETL_PYTHON`` environment variable is set, use it as default.
+    * If setl is running in a virtual environment context, default to the
+      environment's ``python`` command.
+    * If setl is installed in a virtual environment context, default to the
+      environment's interpreter (i.e. ``sys.executable``).
+    * Otherwise require an explicit ``--python`` argument.
+    """
+    default = (
+        os.environ.get("SETL_PYTHON")
+        or _find_active_venv_python()
+        or _find_installed_venv_python()
+    )
+    if default:
+        return {"default": default}
+    return {"required": True}
 
 
 def get_parser() -> argparse.ArgumentParser:
