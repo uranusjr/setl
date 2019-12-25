@@ -20,7 +20,7 @@ def _twine(c: str, targets: List[pathlib.Path]):
     subprocess.check_call(args)
 
 
-def _handle(project, options) -> int:
+def _handle(project: Project, options) -> int:
     steps = options.steps
     if steps is None:
         steps = [Step.sdist, Step.wheel]

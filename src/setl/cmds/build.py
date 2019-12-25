@@ -1,6 +1,8 @@
 import argparse
 import enum
 
+from setl.projects import Project
+
 
 class Step(enum.Enum):
     build = "build"
@@ -10,14 +12,14 @@ class Step(enum.Enum):
     scripts = "build_scripts"
 
 
-def _handle(project, options) -> int:
+def _handle(project: Project, options) -> int:
     steps = options.steps
     if steps is None:
         steps = [Step.build]
 
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
-        project.build(s.value for s in steps)
+        project.build(env, [s.value for s in steps])
 
     return 0
 

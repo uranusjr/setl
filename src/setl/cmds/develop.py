@@ -1,10 +1,12 @@
 import argparse
 
+from setl.projects import Project
 
-def _handle(project, options) -> int:
+
+def _handle(project: Project, options) -> int:
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
-        project.install_for_development()
+        project.install_for_development(env)
     return 0
 
 

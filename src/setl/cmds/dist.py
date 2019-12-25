@@ -9,7 +9,7 @@ class Step(enum.Enum):
     wheel = Project.build_wheel
 
 
-def _handle(project, options) -> int:
+def _handle(project: Project, options) -> int:
     steps = options.steps
     if steps is None:
         steps = [Step.sdist, Step.wheel]

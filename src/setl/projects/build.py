@@ -6,7 +6,6 @@ import dataclasses
 import os
 import pathlib
 import subprocess
-import sys
 import sysconfig
 
 from typing import Optional, Sequence
@@ -37,6 +36,7 @@ class BuildEnv:
     """
 
     root: pathlib.Path
+    interpreter: pathlib.Path
 
     def __enter__(self) -> BuildEnv:
         self.backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
@@ -74,13 +74,13 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
         quintuplet = get_interpreter_quintuplet(python)
         env_dir = self.root.joinpath("build", _ENV_CONTAINER_NAME, quintuplet)
         env_dir.mkdir(exist_ok=True, parents=True)
-        return BuildEnv(env_dir)
+        return BuildEnv(env_dir, python)
 
     def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
         if not reqs:
             return
         args = [
-            sys.executable,
+            os.fspath(env.interpreter),
             "-m",
             "pip",
             "install",

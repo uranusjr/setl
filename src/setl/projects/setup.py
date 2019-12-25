@@ -1,21 +1,26 @@
 __all__ = ["ProjectSetupMixin"]
 
+import os
 import subprocess
-import sys
+
+from typing import Sequence
+
+from .base import BaseProject
+from .build import BuildEnv
 
 
-class ProjectSetupMixin:
-    def _setuppy(self, *args):
+class ProjectSetupMixin(BaseProject):
+    def _setuppy(self, env: BuildEnv, *args: str):
         # TODO: Don't assume setup.py exists. Provide a stub if not.
         subprocess.check_call(
-            [sys.executable, "setup.py", *args], cwd=self.root
+            [os.fspath(env.interpreter), "setup.py", *args], cwd=self.root
         )
 
-    def build(self, steps):
-        self._setuppy(*steps)
+    def build(self, env: BuildEnv, steps: Sequence[str]):
+        self._setuppy(env, *steps)
 
-    def clean(self):
-        self._setuppy("clean")
+    def clean(self, env: BuildEnv):
+        self._setuppy(env, "clean")
 
-    def install_for_development(self):
-        self._setuppy("develop")
+    def install_for_development(self, env: BuildEnv):
+        self._setuppy(env, "develop")
