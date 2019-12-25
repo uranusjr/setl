@@ -5,7 +5,7 @@ Setl
 Setl (pronounced like *settle*) is a simple way to work with PEP 518 projects
 with Setuptools as the backend.
 
-The interface is strongly influenced by Flit_. Currently a proof of concept.
+The interface is strongly influenced by Flit_.
 
 .. _Flit: https://flit.readthedocs.io/en/latest/
 
@@ -25,6 +25,8 @@ Usage
         setl --python path/to/python publish
 
 .. _`PEP 518`: https://www.python.org/dev/peps/pep-0518/
+
+Note: The specified Python needs to have pip available.
 
 
 Miscellaneous
@@ -56,3 +58,12 @@ If not specified, Setl will try to infer the command from virtual environment
 contextx, both the one currently active, and the one Setl is installed in.
 The option is required if there’s no active virtual environment, and Setl is
 installed globally.
+
+
+Todo
+====
+
+* Catch exceptions (especially subprocess calls) and show human-friendly error
+  messages.
+* Clean up outputs from Twine, pip, and (especially) Setuptools. Maybe
+  introduce a spinner?
