@@ -7,13 +7,11 @@ def main():
     # sys.path. I stole this technique from pip.
     if not __package__:
         sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-        argv = sys.argv[1:]
         from setl.cmds import dispatch
     else:
-        argv = sys.argv
         from .cmds import dispatch
 
-    return dispatch(argv)
+    return dispatch(None)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@ import argparse
 import logging
 import os
 import pathlib
-import sys
 
 from typing import Any, Dict, List, Optional
 
@@ -48,10 +47,6 @@ def _find_project() -> Project:
 
 def dispatch(argv: Optional[List[str]]) -> int:
     configure_logging(logging.INFO)  # TODO: Make this configurable.
-
-    if argv is None:
-        argv = sys.argv
     opts = get_parser().parse_args(argv)
-
     project = _find_project()
     return opts.func(project, opts)
