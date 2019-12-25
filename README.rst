@@ -34,6 +34,8 @@ To install a package locally for development, run::
 
     setl --python path/to/python develop
 
+(But ``pip install -e .`` is better, and probably easier as well.)
+
 All *build* commands are available via ``setl build``::
 
     setl --python path/to/python build [--ext] [--py] [--clib] [--scripts]
@@ -41,3 +43,18 @@ All *build* commands are available via ``setl build``::
 To create package distributions (equivalent to ``flit build``), use::
 
     setl --python path/to/python dist [--source] [--wheel]
+
+The ``--python`` specification accepts one of the followings:
+
+* An absolute or relative path to a Python executable.
+* A Python command (``shutil.which`` is used to resolve it).
+* A Python version specifier (the `Python launcher`_ is used to resolve it).
+
+.. _`Python launcher`: https://www.python.org/dev/peps/pep-0397/
+
+It can also be specified by environment variable ``SETL_PYTHON``.
+
+If not specified, setl will try to infer the command from virtual environment
+contextx, both the one currently active, and the one setl is installed in.
+The option is required if there's no active virtual environment, and setl is
+installed globally.
