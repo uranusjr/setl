@@ -6,10 +6,11 @@ jobs:
   include:
     - stage: lint
       python: "3.8"
-      install: pip install mypy black
+      install: pip install mypy black flake8
       script:
         - black --check .
-        - mypy src
+				- mypy src
+				- flake8 src tests
     - stage: package
       python: "3.8"
       install: pip install setl
