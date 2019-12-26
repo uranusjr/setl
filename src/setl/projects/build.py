@@ -7,7 +7,6 @@ import json
 import os
 import pathlib
 import subprocess
-import sysconfig
 
 from typing import Dict, Optional, Sequence
 
