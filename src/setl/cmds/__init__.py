@@ -1,6 +1,7 @@
 __all__ = ["dispatch"]
 
 import argparse
+import dataclasses
 import logging
 import os
 import pathlib
@@ -97,6 +98,7 @@ def _is_project_root(p: pathlib.Path) -> bool:
     return False
 
 
+@dataclasses.dataclass()
 class _ProjectNotFound(Exception):
     start: pathlib.Path
 
