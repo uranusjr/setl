@@ -1,0 +1,29 @@
+language: python
+
+cache: pip
+
+jobs:
+  include:
+    - stage: lint
+      python: "3.8"
+      install: pip install mypy black
+      script:
+        - black --check .
+        - mypy src
+    - stage: package
+      python: "3.8"
+      install: pip install setl
+      script: setl dist
+  allow_failures:
+    - python: "nightly"
+
+# python:
+#   - "3.8"
+#   - "3.7"
+#   - "nightly"
+
+# install:
+#   - pip install setl
+#   - setl install
+
+# script: pytest tests
