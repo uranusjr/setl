@@ -30,7 +30,6 @@ def _handle(project: Project, options) -> int:
         targets = [step(project, env) for step in steps]
 
     if options.check:
-        print("Checking distribution integrity...")
         _twine("check", *targets)
 
     if options.repository:
