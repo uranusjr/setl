@@ -3,12 +3,13 @@ from __future__ import annotations
 __all__ = ["BuildEnv", "ProjectBuildManagementMixin"]
 
 import dataclasses
+import json
 import os
 import pathlib
 import subprocess
 import sysconfig
 
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence
 
 from ._envs import get_interpreter_quintuplet, resolve_python
 from .meta import ProjectMetadataMixin
@@ -20,6 +21,18 @@ class InterpreterNotFound(Exception):
 
 
 _ENV_CONTAINER_NAME = ".isoenvs"
+
+
+_GET_PATHS_CODE = """
+from __future__ import print_function
+
+import json
+import os
+import sysconfig
+
+base = os.environ["SETL_BUILD_ENV_GET_PATHS_BASE"]
+print(json.dumps(sysconfig.get_paths(vars={"base": base, "platbase": base})))
+"""
 
 
 def _join_paths(*paths: Optional[str]) -> str:
@@ -38,11 +51,20 @@ class BuildEnv:
     root: pathlib.Path
     interpreter: pathlib.Path
 
+    def _get_paths(self) -> Dict[str, str]:
+        args = [
+            os.fspath(self.interpreter),
+            "-c",
+            _GET_PATHS_CODE,
+        ]
+        env = os.environ.copy()
+        env["SETL_BUILD_ENV_GET_PATHS_BASE"] = os.fspath(self.root)
+        output = subprocess.check_output(args, env=env, text=True,).strip()
+        return json.loads(output)
+
     def __enter__(self) -> BuildEnv:
         self.backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
-
-        base = os.fspath(self.root)
-        paths = sysconfig.get_paths(vars={"base": base, "platbase": base})
+        paths = self._get_paths()
 
         os.environ["PATH"] = _join_paths(
             paths["scripts"], self.backenv["PATH"] or os.defpath
