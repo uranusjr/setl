@@ -77,6 +77,7 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
         self.install_build_requirements(env, requirements)
 
         container = env.root.joinpath("setl-wheel-metadata")
+        container.mkdir(parents=True, exist_ok=True)
         target = self.hooks.prepare_metadata_for_build_wheel(container)
         with container.joinpath(target, "METADATA").open(encoding="utf8") as f:
             requirements = list(_iter_requirements(f, "requires-dist", []))
