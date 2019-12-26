@@ -5,7 +5,7 @@ import pathlib
 import subprocess
 import sys
 
-from typing import List
+from typing import Union
 
 from setl.projects import Project
 
@@ -15,9 +15,9 @@ class Step(enum.Enum):
     wheel = Project.build_wheel
 
 
-def _twine(c: str, targets: List[pathlib.Path]):
-    args = [sys.executable, "-m", "twine", c, *(os.fspath(p) for p in targets)]
-    subprocess.check_call(args)
+def _twine(c: str, *args: Union[str, pathlib.Path]):
+    cmd = [sys.executable, "-m", "twine", c, *(os.fspath(a) for a in args)]
+    subprocess.check_call(cmd)
 
 
 def _handle(project: Project, options) -> int:
@@ -31,9 +31,15 @@ def _handle(project: Project, options) -> int:
 
     if options.check:
         print("Checking distribution integrity...")
-        _twine("check", targets)
+        _twine("check", *targets)
 
-    _twine("upload", targets)
+    if options.repository:
+        upload_flags = ["--repository", options.repository]
+    elif options.repository_url:
+        upload_flags = ["--repository-url", options.repository_url]
+    else:
+        upload_flags = []
+    _twine("upload", *upload_flags, *targets)
 
     return 0
 
@@ -43,13 +49,6 @@ def get_parser(subparsers) -> argparse.ArgumentParser:
         "publish", description="Publish distributions to PyPI"
     )
     parser.set_defaults(steps=None, func=_handle)
-    parser.add_argument(
-        "--no-check",
-        dest="check",
-        action="store_false",
-        default=True,
-        help="Do not check the distributions before upload",
-    )
     parser.add_argument(
         "--source",
         dest="steps",
@@ -64,4 +63,26 @@ def get_parser(subparsers) -> argparse.ArgumentParser:
         const=Step.wheel,
         help="Publish the wheel",
     )
+    parser.add_argument(
+        "--no-check",
+        dest="check",
+        action="store_false",
+        default=True,
+        help="Do not check the distributions before upload",
+    )
+
+    repo_group = parser.add_mutually_exclusive_group()
+    repo_group.add_argument(
+        "--repository",
+        metavar="NAME",
+        default=None,
+        help="Repository declared in the config file to upload to",
+    )
+    repo_group.add_argument(
+        "--repository-url",
+        metavar="URL",
+        default=None,
+        help="Repository URL to upload to",
+    )
+
     return parser
