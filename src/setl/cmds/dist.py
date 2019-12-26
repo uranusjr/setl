@@ -3,6 +3,8 @@ import enum
 
 from setl.projects import Project
 
+from ._utils import twine
+
 
 class Step(enum.Enum):
     sdist = Project.build_sdist
@@ -18,9 +20,8 @@ def _handle(project: Project, options) -> int:
         project.ensure_build_requirements(env)
         targets = [step(project, env) for step in steps]
 
-    print("Created distributions:")
-    for t in targets:
-        print(f"  - {t.name}")
+    if options.check:
+        twine("check", *targets)
 
     return 0
 
@@ -41,5 +42,12 @@ def get_parser(subparsers) -> argparse.ArgumentParser:
         action="append_const",
         const=Step.wheel,
         help="Create a wheel",
+    )
+    parser.add_argument(
+        "--no-check",
+        dest="check",
+        action="store_false",
+        default=True,
+        help="Do not check the distributions after build",
     )
     return parser

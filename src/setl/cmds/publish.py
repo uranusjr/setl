@@ -1,23 +1,14 @@
 import argparse
 import enum
-import os
-import pathlib
-import subprocess
-import sys
-
-from typing import Union
 
 from setl.projects import Project
+
+from ._utils import twine
 
 
 class Step(enum.Enum):
     sdist = Project.build_sdist
     wheel = Project.build_wheel
-
-
-def _twine(c: str, *args: Union[str, pathlib.Path]):
-    cmd = [sys.executable, "-m", "twine", c, *(os.fspath(a) for a in args)]
-    subprocess.check_call(cmd)
 
 
 def _handle(project: Project, options) -> int:
@@ -30,7 +21,7 @@ def _handle(project: Project, options) -> int:
         targets = [step(project, env) for step in steps]
 
     if options.check:
-        _twine("check", *targets)
+        twine("check", *targets)
 
     if options.repository:
         upload_flags = ["--repository", options.repository]
@@ -38,7 +29,7 @@ def _handle(project: Project, options) -> int:
         upload_flags = ["--repository-url", options.repository_url]
     else:
         upload_flags = []
-    _twine("upload", *upload_flags, *targets)
+    twine("upload", *upload_flags, *targets)
 
     return 0
 
