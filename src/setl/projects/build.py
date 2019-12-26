@@ -43,7 +43,7 @@ def _get_env_paths(python: pathlib.Path, root: pathlib.Path) -> Dict[str, str]:
     return json.loads(output)
 
 
-def _join_paths(*paths: Optional[str]) -> str:
+def _environ_path_format(*paths: Optional[str]) -> str:
     return os.pathsep.join(path for path in paths if path)
 
 
@@ -80,10 +80,10 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
         # dependencies in the isolated environment.
         backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
         paths = _get_env_paths(python, env_dir)
-        os.environ["PATH"] = _join_paths(
+        os.environ["PATH"] = _environ_path_format(
             paths["scripts"], backenv["PATH"] or os.defpath
         )
-        os.environ["PYTHONPATH"] = _join_paths(
+        os.environ["PYTHONPATH"] = _environ_path_format(
             paths["purelib"], paths["platlib"], backenv["PYTHONPATH"]
         )
 
