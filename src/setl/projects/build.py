@@ -2,13 +2,14 @@ from __future__ import annotations
 
 __all__ = ["BuildEnv", "ProjectBuildManagementMixin"]
 
+import contextlib
 import dataclasses
 import json
 import os
 import pathlib
 import subprocess
 
-from typing import Dict, Optional, Sequence
+from typing import Dict, Iterator, Optional, Sequence
 
 from ._envs import get_interpreter_quintuplet, resolve_python
 from .meta import ProjectMetadataMixin
@@ -34,68 +35,66 @@ print(json.dumps(sysconfig.get_paths(vars={"base": base, "platbase": base})))
 """
 
 
+def _get_env_paths(python: pathlib.Path, root: pathlib.Path) -> Dict[str, str]:
+    args = [os.fspath(python), "-c", _GET_PATHS_CODE]
+    env = os.environ.copy()
+    env["SETL_BUILD_ENV_GET_PATHS_BASE"] = os.fspath(root)
+    output = subprocess.check_output(args, env=env, text=True).strip()
+    return json.loads(output)
+
+
 def _join_paths(*paths: Optional[str]) -> str:
     return os.pathsep.join(path for path in paths if path)
 
 
 @dataclasses.dataclass()
 class BuildEnv:
-    """Context manager to install build deps in a simple temporary environment.
-
-    Based on ``pep517.envbuild.BuildEnvironment``, which is in turn based on
-    pip's implementation. The difference here is that we don't clean up the
-    environment directory, and actually reuse it across builds.
-    """
-
     root: pathlib.Path
     interpreter: pathlib.Path
 
-    def _get_paths(self) -> Dict[str, str]:
-        args = [
-            os.fspath(self.interpreter),
-            "-c",
-            _GET_PATHS_CODE,
-        ]
-        env = os.environ.copy()
-        env["SETL_BUILD_ENV_GET_PATHS_BASE"] = os.fspath(self.root)
-        output = subprocess.check_output(args, env=env, text=True,).strip()
-        return json.loads(output)
 
-    def __enter__(self) -> BuildEnv:
-        self.backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
-        paths = self._get_paths()
+class ProjectBuildManagementMixin(ProjectMetadataMixin):
+    @contextlib.contextmanager
+    def ensure_build_envdir(self, spec: str) -> Iterator[BuildEnv]:
+        """Ensure an isolated environment exists for build.
 
+        Environment setup is based on ``pep517.envbuild.BuildEnvironment``,
+        which is in turn based on pip's implementation. The difference is the
+        environment in a non-temporary, predictable location, and not cleaned
+        up on exit. It is actually reused across builds.
+
+        :param spec: Specification of the base interpreter.
+        :returns: A context manager to control build setup/teardown.
+        """
+        # Identify the Python interpreter to use.
+        python = resolve_python(spec)
+        if not python:
+            raise InterpreterNotFound(spec)
+
+        # Create isolated environment.
+        quintuplet = get_interpreter_quintuplet(python)
+        env_dir = self.root.joinpath("build", _ENV_CONTAINER_NAME, quintuplet)
+        env_dir.mkdir(exist_ok=True, parents=True)
+
+        # Set up environment variables so PEP 517 subprocess calls can find
+        # dependencies in the isolated environment.
+        backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
+        paths = _get_env_paths(python, env_dir)
         os.environ["PATH"] = _join_paths(
-            paths["scripts"], self.backenv["PATH"] or os.defpath
+            paths["scripts"], backenv["PATH"] or os.defpath
         )
         os.environ["PYTHONPATH"] = _join_paths(
-            paths["purelib"], paths["platlib"], self.backenv["PYTHONPATH"]
+            paths["purelib"], paths["platlib"], backenv["PYTHONPATH"]
         )
 
-        return self
+        yield BuildEnv(env_dir, python)
 
-    def __exit__(self, etype, eval, etb):
-        for k, v in self.backenv.items():
+        # Restore environment variables.
+        for k, v in backenv.items():
             if v is None:
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
-
-
-class ProjectBuildManagementMixin(ProjectMetadataMixin):
-    def ensure_build_envdir(self, interpreter_spec: str) -> BuildEnv:
-        """Ensure an isolated environment exists for build.
-
-        :param interpreter_spec: Specification of the base interpreter.
-        :returns: A context manager to control build setup/teardown.
-        """
-        python = resolve_python(interpreter_spec)
-        if not python:
-            raise InterpreterNotFound(interpreter_spec)
-        quintuplet = get_interpreter_quintuplet(python)
-        env_dir = self.root.joinpath("build", _ENV_CONTAINER_NAME, quintuplet)
-        env_dir.mkdir(exist_ok=True, parents=True)
-        return BuildEnv(env_dir, python)
 
     def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
         if not reqs:
