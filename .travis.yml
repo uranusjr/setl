@@ -9,8 +9,8 @@ jobs:
       install: pip install mypy black flake8
       script:
         - black --check .
-				- mypy src
-				- flake8 src tests
+        - mypy src
+        - flake8 src tests
     - stage: package
       python: "3.8"
       install: pip install setl
