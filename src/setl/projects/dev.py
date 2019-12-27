@@ -1,7 +1,6 @@
 __all__ = ["ProjectDevelopMixin"]
 
 import os
-import pathlib
 import subprocess
 
 from typing import Collection, Iterator, Optional
