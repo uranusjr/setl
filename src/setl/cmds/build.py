@@ -19,7 +19,7 @@ def _handle(project: Project, options) -> int:
 
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
-        project.build(env, [s.value for s in steps])
+        project.setuppy(env, *(s.value for s in steps))
 
     return 0
 
