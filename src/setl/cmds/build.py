@@ -6,6 +6,7 @@ from setl.projects import Project
 
 class Step(enum.Enum):
     build = "build"
+    info = "egg_info"
     clib = "build_clib"
     ext = "build_ext"
     py = "build_py"
@@ -13,9 +14,10 @@ class Step(enum.Enum):
 
 
 def _handle(project: Project, options) -> int:
-    steps = options.steps
-    if steps is None:
-        steps = [Step.build]
+    if options.steps is None:
+        steps = [Step.egg_info, Step.build]
+    else:
+        steps = options.steps
 
     with project.ensure_build_envdir(options.python) as env:
         project.ensure_build_requirements(env)
@@ -27,6 +29,13 @@ def _handle(project: Project, options) -> int:
 def get_parser(subparsers) -> argparse.ArgumentParser:
     parser = subparsers.add_parser("build", description="Build the package")
     parser.set_defaults(steps=None, func=_handle)
+    parser.add_argument(
+        "--info",
+        dest="steps",
+        action="append_const",
+        const=Step.info,
+        help="Build .egg-info directory",
+    )
     parser.add_argument(
         "--ext",
         dest="steps",
