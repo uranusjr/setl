@@ -28,9 +28,3 @@ class ProjectSetupMixin(BaseProject):
             ],
             cwd=self.root,
         )
-
-    def build(self, env: BuildEnv, steps: Sequence[str]):
-        self.setuppy(env, *steps)
-
-    def clean(self, env: BuildEnv):
-        self.setuppy(env, "clean")

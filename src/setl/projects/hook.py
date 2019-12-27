@@ -23,7 +23,10 @@ class ProjectPEP517HookCallerMixin(
     @functools.cached_property  # type: ignore  # Mypy does not have this yet.
     def hooks(self) -> pep517.wrappers.Pep517HookCaller:
         return pep517.wrappers.Pep517HookCaller(
-            self.root, self.build_backend, self.backend_path
+            self.root,
+            self.build_backend,
+            self.backend_path,
+            runner=pep517.wrappers.quiet_subprocess_runner,
         )
 
     def _warn_if_pyproject_toml_not_present(self, target: str):

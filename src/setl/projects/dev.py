@@ -1,6 +1,7 @@
 __all__ = ["ProjectDevelopMixin"]
 
 import os
+import pathlib
 import subprocess
 
 from typing import Collection, Iterator, Optional
@@ -35,7 +36,7 @@ def _iter_requirements(
     key = key.lower()
     for line in f:
         if ":" not in line:  # End of metadata.
-            return
+            break
         k, v = line.strip().split(":", 1)
         if k.lower() != key:
             continue
@@ -51,6 +52,30 @@ def _iter_requirements(
 
 
 class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
+    def iter_metadata_for_development(self, env: BuildEnv) -> Iterator[str]:
+        """Generate metadata for development install.
+
+        Since PEP 517 does not cover this yet, we fall back to use wheel
+        metadata instead. This is good enough because we only use this for
+        one of the followings:
+
+        * Requires-Dist
+        * Name
+
+        Please keep the list updated if you call this function.
+
+        Generated metadata are stored in the build environment, so it is more
+        easily ignored and cleaned up.
+        """
+        requirements = self.hooks.get_requires_for_build_wheel()
+        self.install_build_requirements(env, requirements)
+
+        container = env.root.joinpath("setl-wheel-metadata")
+        container.mkdir(parents=True, exist_ok=True)
+        target = self.hooks.prepare_metadata_for_build_wheel(container)
+        with container.joinpath(target, "METADATA").open(encoding="utf8") as f:
+            yield from f
+
     def install_for_development(self, env: BuildEnv):
         """Install the project for development.
 
@@ -62,25 +87,18 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
 
         Our own solution...
 
-        1. Installs build requirements for wheel (see next step).
-        2. Call ``prepare_metadata_for_build_wheel``. The result would tell us
-           what run-time requirements this project has.
+        1. Installs build requirements (see next step).
+        2. Build metadata to know what run-time requirements this project has.
         3. Install run-time requirements with pip, so they are installed as
            modern distributions (dist-info).
         4. Call `setup.py develop --no-deps` so we install the package itself
            without pip machinery.
-
-        The wheel metadata generated in step 2 are stored in the build
-        environment, so it is more easily ignored and cleaned up.
         """
-        requirements = self.hooks.get_requires_for_build_wheel()
-        self.install_build_requirements(env, requirements)
-
-        container = env.root.joinpath("setl-wheel-metadata")
-        container.mkdir(parents=True, exist_ok=True)
-        target = self.hooks.prepare_metadata_for_build_wheel(container)
-        with container.joinpath(target, "METADATA").open(encoding="utf8") as f:
-            requirements = list(_iter_requirements(f, "requires-dist", []))
+        requirements = list(
+            _iter_requirements(
+                self.iter_metadata_for_development(env), "requires-dist", []
+            )
+        )
 
         args = [
             os.fspath(env.interpreter),

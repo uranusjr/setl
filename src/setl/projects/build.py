@@ -7,6 +7,7 @@ import dataclasses
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 
 from typing import Dict, Iterator, Optional, Sequence
@@ -52,6 +53,12 @@ class BuildEnv:
     root: pathlib.Path
     interpreter: pathlib.Path
 
+    def __post_init__(self):
+        self._should_delete = False
+
+    def mark_for_cleanup(self):
+        self._should_delete = True
+
 
 class ProjectBuildManagementMixin(ProjectMetadataMixin):
     @contextlib.contextmanager
@@ -87,7 +94,8 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
             paths["purelib"], paths["platlib"], backenv["PYTHONPATH"]
         )
 
-        yield BuildEnv(env_dir, python)
+        env = BuildEnv(env_dir, python)
+        yield env
 
         # Restore environment variables.
         for k, v in backenv.items():
@@ -95,6 +103,9 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
+
+        if getattr(env, "_should_delete", False):
+            shutil.rmtree(env.root)
 
     def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
         if not reqs:
