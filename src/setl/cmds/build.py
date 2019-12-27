@@ -5,8 +5,8 @@ from setl.projects import Project
 
 
 class Step(enum.Enum):
-    build = "build"
     info = "egg_info"
+    build = "build"
     clib = "build_clib"
     ext = "build_ext"
     py = "build_py"
@@ -15,7 +15,7 @@ class Step(enum.Enum):
 
 def _handle(project: Project, options) -> int:
     if options.steps is None:
-        steps = [Step.egg_info, Step.build]
+        steps = [Step.info, Step.build]
     else:
         steps = options.steps
 
