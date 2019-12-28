@@ -4,4 +4,4 @@ requires = ["setuptools>=39.2.0", "wheel"]
 [tool.black]
 line-length = 79
 target-version = ["py38"]
-include = '^/(src|tests)/.+\.py$'
+include = '^/(docs|src|tests)/.+\.py$'

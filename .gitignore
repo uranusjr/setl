@@ -1,5 +1,6 @@
 build/
 dist/
+docs/target/
 __pycache__/
 .venvs/
 

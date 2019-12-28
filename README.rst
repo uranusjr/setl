@@ -10,60 +10,70 @@ The interface is strongly influenced by Flit_.
 .. _Flit: https://flit.readthedocs.io/en/latest/
 
 
-Usage
-=====
+Install
+=======
 
-1. Create a project with appropriate ``setup.py`` and/or ``setup.cfg`` metadata
-   declarations.
+The recommended install method is pipx_::
 
-2. Create ``pyproject.toml`` and provide the needed `PEP 518`_ definitions. An
-   empty file is sufficient if you want to use the default values.
+    pipx install setl
 
-3. Run this command to upload your code to PyPI (using ``--python`` to
-   specify the Python to build the package against)::
+.. _pipx: https://pipxproject.github.io/pipx/
 
-        setl --python path/to/python publish
-
-.. _`PEP 518`: https://www.python.org/dev/peps/pep-0518/
-
-Note: The specified Python needs to have pip available.
+Setl needs to be installed with Python 3.8 or later, but **can be used to build
+projects using older Python** with the ``--python`` option.
 
 
-Miscellaneous
-=============
+Quickstart for Setuptools Veterans
+==================================
 
-To install a package locally for development, run::
+Aside from the usual Setuptools configurations, you need to create a file
+``pyproject.toml`` beside ``setup.py``. An empty file is good enough.
 
-    setl --python path/to/python develop
+Command comparisons to Setuptools:
 
-All *build* commands are available via ``setl build``::
-
-    setl --python path/to/python build [--ext] [--py] [--clib] [--scripts]
-
-To create package distributions (equivalent to ``flit build``), use::
-
-    setl --python path/to/python dist [--source] [--wheel]
-
-The ``--python`` specification accepts one of the followings:
-
-* Absolute or relative path to a Python executable.
-* Python command (``shutil.which`` is used to resolve).
-* Python version specifier (the `Python launcher`_ is used to resolve).
-
-.. _`Python launcher`: https://www.python.org/dev/peps/pep-0397/
-
-It can also be specified by environment variable ``SETL_PYTHON``.
-
-If not specified, Setl will try to infer the command from virtual environment
-contextx, both the one currently active, and the one Setl is installed in.
-The option is required if there’s no active virtual environment, and Setl is
-installed globally.
++------------------+-------------------------------------------------+
+| Setl             | Setuptools approximation                        |
++==================+=================================================+
+| ``setl develop`` | ``setup.py develop``                            |
++------------------+-------------------------------------------------+
+| ``setl build``   | ``setup.py egg_info build``                     |
++------------------+-------------------------------------------------+
+| ``setl dist``    | ``setup.py egg_info build sdist bdist_wheel``   |
++------------------+-------------------------------------------------+
+| ``setl publish`` | | ``setup.py egg_info build sdist bdist_wheel`` |
+|                  | | ``twine upload``                              |
++------------------+-------------------------------------------------+
 
 
-Todo
-====
+But Why?
+========
 
-* Catch exceptions (especially subprocess calls) and show human-friendly error
-  messages.
-* Clean up outputs from Twine, pip, and (especially) Setuptools. Maybe
-  introduce a spinner?
+The main difference is how build and runtime dependencies are installed.
+
+Traditionally Setuptools projects use ``setup_requires``, but that has various
+problems (e.g. fetch the dependencies as eggs) so pip discourages its
+usage, and advices using PEP 518 to specify build time dependencies instead.
+But Setuptools's project management commands do not handle PEP 518
+declarations, leaving the user to install those build dependencies manually
+before using ``setup.py``. Setl commands mimic pip's build setup before calling
+their ``setup.py`` counterparts, so the build environment stays up-to-date.
+
+Similarly, ``setup.py develop`` installs *runtime* dependencies with
+``easy_install``, instead of pip. It therefore does not respect PEP 518
+declarations in those dependencies, and may even fail if one of the
+dependencies does not support the "legacy mode" build process.
+``setl develop`` works around this by ``pip install``-ing runtime dependencies
+before calling ``setup.py develop --no-deps``, so dependencies are installed
+in the modern format.
+
+The rest are more about providing more useful defaults. It is easy to forget
+re-building ``egg-info`` when you modify metadata, so Setl tries to be
+helpful. Nowadays people almost always want to build both sdist and wheel, so
+Setl does it by default. The PyPA recommends against using ``setup.py upload``,
+so Setl bundles it. Nothing rocket science.
+
+
+Next Step
+=========
+
+Read the documentation for more!
