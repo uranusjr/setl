@@ -35,7 +35,7 @@ class ProjectPEP517HookCallerMixin(
                 return
         logger.warn(
             "pyproject.toml not found in `%s`. Add the following to "
-            "your MANIFEST.in:\n\n    include pyproject.toml\n\n"
+            "your `MANIFEST.in`:\n\ninclude pyproject.toml\n\n"
             "See: https://github.com/pypa/setuptools/issues/1632\n",
             target,
         )

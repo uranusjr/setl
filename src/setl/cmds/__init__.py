@@ -11,9 +11,13 @@ import sys
 from typing import Any, Dict, List, Optional
 
 from setl._logging import configure_logging
+from setl.errs import Error
 from setl.projects import Project
 
 from . import build, clean, develop, dist, publish
+
+
+logger = logging.getLogger(__name__)
 
 
 def _find_active_venv_python() -> Optional[pathlib.Path]:
@@ -113,6 +117,12 @@ def _find_project() -> Project:
 
 def dispatch(argv: Optional[List[str]]) -> int:
     configure_logging(logging.INFO)  # TODO: Make this configurable.
+
+    try:
+        project = _find_project()
+    except _ProjectNotFound as e:
+        logger.error("Project not found from %s", e.start)
+        return Error.project_not_found
+
     opts = get_parser().parse_args(argv)
-    project = _find_project()
     return opts.func(project, opts)
