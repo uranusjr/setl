@@ -1,4 +1,1 @@
-recursive-include src *.py
-recursive-include tests *.py
-
 include pyproject.toml  # Temporary workaround for pypa/setuptools#1632.
