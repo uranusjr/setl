@@ -35,10 +35,10 @@ def _find_active_venv_python() -> Optional[pathlib.Path]:
         return None
     python = pathlib.Path(command)
     try:
-        prefix = python.relative_to(virtual_env)
+        py_in_env = python.relative_to(virtual_env)
     except ValueError:
         return None
-    if pathlib.Path(virtual_env, prefix).samefile(python):
+    if pathlib.Path(virtual_env, py_in_env).samefile(python):
         return python
     return None
 
