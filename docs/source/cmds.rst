@@ -55,15 +55,15 @@ Build Files
    :prog: setl
    :path: build
 
-Most of the flags have a direct `setup.py build_*` counterpart. ``--info``
+Most of the flags have a direct ``setup.py build_*`` counterpart. ``--info``
 corresponds to ``setup.py egg_info``.
 
 If no flags are passed, Setl will run ``setup.py egg_info build`` to go through
 all the build steps.
 
 
-Install for Develop
-===================
+Install for Development
+=======================
 
 .. argparse::
    :ref: setl.cmds.get_parser
