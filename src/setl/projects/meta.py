@@ -1,9 +1,8 @@
 __all__ = ["ProjectMetadataMixin"]
 
-import functools
-
 from typing import Any, Dict, List, Optional
 
+import cached_property
 import toml
 
 from .base import BaseProject
@@ -17,7 +16,7 @@ _DEFAULT_BUILD_SYSTEM = {
 
 
 class ProjectMetadataMixin(BaseProject):
-    @functools.cached_property  # type: ignore  # Mypy does not have this yet.
+    @cached_property.cached_property
     def build_system(self) -> Dict[str, Any]:
         with self.root.joinpath("pyproject.toml").open() as f:
             data = toml.load(f)

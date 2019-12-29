@@ -1,11 +1,11 @@
 __all__ = ["ProjectPEP517HookCallerMixin"]
 
-import functools
 import logging
 import pathlib
 import re
 import tarfile
 
+import cached_property
 import pep517.wrappers
 
 from .build import BuildEnv, ProjectBuildManagementMixin
@@ -20,7 +20,7 @@ PYPROJECT_TOML_PATTERN = re.compile(r"^[^/]+/pyproject\.toml$")
 class ProjectPEP517HookCallerMixin(
     ProjectBuildManagementMixin, ProjectMetadataMixin
 ):
-    @functools.cached_property  # type: ignore  # Mypy does not have this yet.
+    @cached_property.cached_property
     def hooks(self) -> pep517.wrappers.Pep517HookCaller:
         return pep517.wrappers.Pep517HookCaller(
             self.root,

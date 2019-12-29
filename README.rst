@@ -19,7 +19,7 @@ The recommended install method is pipx_::
 
 .. _pipx: https://pipxproject.github.io/pipx/
 
-Setl needs to be installed with Python 3.8 or later, but **can be used to build
+Setl needs to be installed with Python 3.7 or later, but **can be used to build
 projects using older Python** with the ``--python`` option.
 
 
