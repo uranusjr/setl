@@ -2,6 +2,14 @@
 Setl
 ====
 
+.. image:: https://travis-ci.com/uranusjr/setl.svg?branch=master
+    :target: https://travis-ci.com/uranusjr/setl
+    :alt: Travis CI Status
+
+.. image:: https://readthedocs.org/projects/setl/badge/?version=latest
+    :target: https://setl.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 Setl (pronounced like *settle*) is a simple way to work with PEP 518 projects
 with Setuptools as the backend.
 
@@ -73,7 +81,11 @@ Setl does it by default. The PyPA recommends against using ``setup.py upload``,
 so Setl bundles it. Nothing rocket science.
 
 
-Next Step
-=========
+Next Steps
+==========
 
-Read the documentation for more!
+* Read the documentation_ for detailed command descriptions and inner workings.
+* View the source_ and help contribute to the project.
+
+.. _documentation: https://setl.readthedocs.io
+.. _source: https://github.com/uranusjr/setl
