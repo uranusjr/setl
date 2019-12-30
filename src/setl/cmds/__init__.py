@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from setl._logging import configure_logging
 from setl.errs import Error
-from setl.projects import Project
+from setl.projects import InterpreterNotFound, Project, PyUnavailable
 
 from . import build, clean, develop, dist, publish
 
@@ -125,4 +125,22 @@ def dispatch(argv: Optional[List[str]]) -> int:
         return Error.project_not_found
 
     opts = get_parser().parse_args(argv)
-    return opts.func(project, opts)
+
+    try:
+        result = opts.func(project, opts)
+    except InterpreterNotFound as e:
+        logger.error("Not a valid interpreter: %r", e.spec)
+        return Error.interpreter_not_found
+    except PyUnavailable:
+        if os.name == "nt":
+            url = "https://docs.python.org/3/using/windows.html"
+        else:
+            url = "https://github.com/brettcannon/python-launcher"
+        logger.error(
+            "Specifying Python with version requires the Python "
+            "Launcher\n%s",
+            url,
+        )
+        return Error.py_unavailable
+
+    return result

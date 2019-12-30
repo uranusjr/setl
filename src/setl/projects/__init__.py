@@ -1,7 +1,8 @@
-__all__ = ["Project"]
+__all__ = ["InterpreterNotFound", "Project", "PyUnavailable"]
 
+from ._envs import PyUnavailable
 from .base import BaseProject
-from .build import ProjectBuildManagementMixin
+from .build import InterpreterNotFound, ProjectBuildManagementMixin
 from .clean import ProjectCleanMixin
 from .dev import ProjectDevelopMixin
 from .hook import ProjectPEP517HookCallerMixin
