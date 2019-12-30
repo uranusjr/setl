@@ -10,7 +10,10 @@ import pathlib
 import shutil
 import subprocess
 
-from typing import Dict, Iterator, Optional, Sequence
+from typing import Dict, Iterator, Optional, Sequence, Set
+
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 
 from ._envs import get_interpreter_quintuplet, resolve_python
 from .meta import ProjectMetadataMixin
@@ -52,12 +55,52 @@ def _environ_path_format(*paths: Optional[str]) -> str:
 class BuildEnv:
     root: pathlib.Path
     interpreter: pathlib.Path
+    libdirs: Set[pathlib.Path]
 
     def __post_init__(self):
         self._should_delete = False
 
     def mark_for_cleanup(self):
         self._should_delete = True
+
+
+def _list_installed(env: BuildEnv) -> Dict[str, str]:
+    """List versions of installed packages in the build environment.
+
+    This only lists packages under the isolated environment prefix, NOT
+    packages in the parent environment.
+
+    Returns a `{canonical_name: version}` mapping.
+    """
+    args = [
+        os.fspath(env.interpreter),
+        "-m",
+        "pip",
+        "list",
+        "--format=json",
+        *(f"--path={p}" for p in env.libdirs),
+    ]
+    output = subprocess.check_output(args, text=True).strip()
+    return {
+        canonicalize_name(e["name"]): e["version"]
+        for e in json.loads(output)
+        if "name" in e and "version" in e
+    }
+
+
+def _is_req_met(req: str, workingset: Dict[str, str]) -> bool:
+    """Check whether a request requirement is met by given workingset.
+
+    :param req: A PEP 508 requirement string.
+    :param workingset: A `{canonical_name: version}` mapping (e.g. returned by
+        `_list_installed`).
+    """
+    r = Requirement(req)
+    try:
+        version = workingset[canonicalize_name(r.name)]
+    except KeyError:
+        return False
+    return not r.specifier or version in r.specifier
 
 
 class ProjectBuildManagementMixin(ProjectMetadataMixin):
@@ -87,14 +130,19 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
         # dependencies in the isolated environment.
         backenv = {k: os.environ.get(k) for k in ["PATH", "PYTHONPATH"]}
         paths = _get_env_paths(python, env_dir)
+        libdirs = {paths["purelib"], paths["platlib"]}
         os.environ["PATH"] = _environ_path_format(
             paths["scripts"], backenv["PATH"] or os.defpath
         )
         os.environ["PYTHONPATH"] = _environ_path_format(
-            paths["purelib"], paths["platlib"], backenv["PYTHONPATH"]
+            *libdirs, backenv["PYTHONPATH"]
         )
 
-        env = BuildEnv(env_dir, python)
+        env = BuildEnv(
+            root=env_dir,
+            interpreter=python,
+            libdirs={pathlib.Path(p) for p in libdirs},
+        )
         yield env
 
         # Restore environment variables.
@@ -108,6 +156,7 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
             shutil.rmtree(env.root)
 
     def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
+        reqs = [r for r in reqs if not _is_req_met(r, _list_installed(env))]
         if not reqs:
             return
         args = [
@@ -115,6 +164,7 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
             "-m",
             "pip",
             "install",
+            "--ignore-installed",
             "--prefix",
             os.fspath(env.root),
             *reqs,
