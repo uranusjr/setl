@@ -98,14 +98,6 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
                 self.iter_metadata_for_development(env), "requires-dist", []
             )
         )
-
-        args = [
-            os.fspath(env.interpreter),
-            "-m",
-            "pip",
-            "install",
-            *(str(r) for r in requirements),
-        ]
-        subprocess.check_call(args, cwd=self.root)
+        self.install_build_requirements(env, requirements)
 
         self.setuppy(env, "develop", "--no-deps")
