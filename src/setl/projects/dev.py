@@ -1,8 +1,5 @@
 __all__ = ["ProjectDevelopMixin"]
 
-import os
-import subprocess
-
 from typing import Collection, Iterator, Optional
 
 import packaging.markers
