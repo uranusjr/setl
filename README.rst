@@ -49,8 +49,6 @@ Command comparisons to Setuptools:
 +------------------+-------------------------------------------------+
 | ``setl build``   | ``setup.py egg_info build``                     |
 +------------------+-------------------------------------------------+
-| ``setl dist``    | ``setup.py egg_info build sdist bdist_wheel``   |
-+------------------+-------------------------------------------------+
 | ``setl publish`` | | ``setup.py egg_info build sdist bdist_wheel`` |
 |                  | | ``twine upload``                              |
 +------------------+-------------------------------------------------+
