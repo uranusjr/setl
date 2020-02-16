@@ -22,11 +22,11 @@ def _get_name(f: Iterator[str]) -> Optional[str]:
 
 _GET_EGG_INFO_LOCATION_CODE = """
 import os
+import sys
 import pkg_resources
 
-name = os.environ["SELT_GET_EGG_INFO_LOCATION_NAME"]
 try:
-    dist = pkg_resources.get_distribution(name)
+    dist = pkg_resources.get_distribution(sys.argv[1])
 except pkg_resources.DistributionNotFound:
     pass
 else:
@@ -40,14 +40,13 @@ class ProjectCleanMixin(ProjectDevelopMixin):
         if not name:
             return
 
-        environ = os.environ.copy()
-        environ["SELT_GET_EGG_INFO_LOCATION_NAME"] = name
         args = [
             os.fspath(env.interpreter),
             "-c",
             _GET_EGG_INFO_LOCATION_CODE,
+            name,
         ]
-        info = subprocess.check_output(args, env=environ, text=True).strip()
+        info = subprocess.check_output(args, text=True).strip()
 
         if not info or not os.path.isdir(info):
             return
