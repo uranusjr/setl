@@ -1,5 +1,7 @@
 import argparse
 import enum
+import pathlib
+import typing
 
 from setl.projects import Project
 
@@ -9,6 +11,16 @@ from ._utils import twine
 class Step(enum.Enum):
     sdist = Project.build_sdist
     wheel = Project.build_wheel
+
+
+def _upload(options, targets: typing.List[pathlib.Path]):
+    if options.repository:
+        upload_flags = ["--repository", options.repository]
+    elif options.repository_url:
+        upload_flags = ["--repository-url", options.repository_url]
+    else:
+        upload_flags = []
+    twine("upload", *upload_flags, *targets)
 
 
 def _handle(project: Project, options) -> int:
@@ -23,13 +35,8 @@ def _handle(project: Project, options) -> int:
     if options.check:
         twine("check", *targets)
 
-    if options.repository:
-        upload_flags = ["--repository", options.repository]
-    elif options.repository_url:
-        upload_flags = ["--repository-url", options.repository_url]
-    else:
-        upload_flags = []
-    twine("upload", *upload_flags, *targets)
+    if options.upload:
+        _upload(options, targets)
 
     return 0
 
@@ -62,6 +69,13 @@ def get_parser(subparsers) -> argparse.ArgumentParser:
     )
 
     repo_group = parser.add_mutually_exclusive_group()
+    repo_group.add_argument(
+        "--no-upload",
+        dest="upload",
+        action="store_false",
+        default=True,
+        help="Do no upload built distributions",
+    )
     repo_group.add_argument(
         "--repository",
         metavar="NAME",
