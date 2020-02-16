@@ -14,7 +14,7 @@ from setl._logging import configure_logging
 from setl.errs import Error
 from setl.projects import InterpreterNotFound, Project, PyUnavailable
 
-from . import build, clean, develop, dist, publish
+from . import build, clean, develop, dist, publish, setuppy
 
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ def get_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers()
-    for sub in [build, clean, develop, dist, publish]:
+    for sub in [build, clean, develop, dist, publish, setuppy]:
         sub.get_parser(subparsers)  # type: ignore
 
     return parser
