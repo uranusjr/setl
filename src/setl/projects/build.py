@@ -32,18 +32,17 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import sysconfig
 
-base = os.environ["SETL_BUILD_ENV_GET_PATHS_BASE"]
+base = sys.argv[1]
 print(json.dumps(sysconfig.get_paths(vars={"base": base, "platbase": base})))
 """
 
 
 def _get_env_paths(python: pathlib.Path, root: pathlib.Path) -> Dict[str, str]:
-    args = [os.fspath(python), "-c", _GET_PATHS_CODE]
-    env = os.environ.copy()
-    env["SETL_BUILD_ENV_GET_PATHS_BASE"] = os.fspath(root)
-    output = subprocess.check_output(args, env=env, text=True).strip()
+    args = [os.fspath(python), "-c", _GET_PATHS_CODE, os.fspath(root)]
+    output = subprocess.check_output(args, text=True).strip()
     return json.loads(output)
 
 
