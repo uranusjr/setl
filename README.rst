@@ -59,10 +59,10 @@ But Why?
 
 The main difference is how build and runtime dependencies are installed.
 
-Traditionally Setuptools projects use ``setup_requires``, but that has various
-problems (e.g. fetch the dependencies as eggs) so pip discourages its
-usage, and advices using PEP 518 to specify build time dependencies instead.
-But Setuptools's project management commands do not handle PEP 518
+Traditionally Setuptools projects use ``setup_requires``, but that has
+`various problems <https://www.python.org/dev/peps/pep-0518/#id24>`__ and is
+discouraged in favour of using PEP 518 to specify build time dependencies
+instead. But Setuptools's project management commands do not handle PEP 518
 declarations, leaving the user to install those build dependencies manually
 before using ``setup.py``. Setl commands mimic pip's build setup before calling
 their ``setup.py`` counterparts, so the build environment stays up-to-date.
@@ -76,10 +76,10 @@ before calling ``setup.py develop --no-deps``, so dependencies are installed
 in the modern format.
 
 The rest are more about providing more useful defaults. It is easy to forget
-re-building ``egg-info`` when you modify metadata, so Setl tries to be
+to re-build ``egg-info`` when you modify metadata, so Setl tries to be
 helpful. Nowadays people almost always want to build both sdist and wheel, so
 Setl does it by default. The PyPA recommends against using ``setup.py upload``,
-so Setl bundles it. Nothing rocket science.
+so Setl bundles Twine for uploading instead. Nothing rocket science.
 
 
 Next Steps
