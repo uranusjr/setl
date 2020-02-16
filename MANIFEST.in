@@ -1,1 +1,0 @@
-include pyproject.toml  # Temporary workaround for pypa/setuptools#1632.

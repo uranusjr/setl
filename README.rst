@@ -35,7 +35,10 @@ Quickstart for Setuptools Veterans
 ==================================
 
 Aside from the usual Setuptools configurations, you need to create a file
-``pyproject.toml`` beside ``setup.py``. An empty file is good enough.
+``pyproject.toml`` beside ``setup.py``, with the following content::
+
+    [build-system]
+    requires = ["setuptools>=43", "wheel"]
 
 Command comparisons to Setuptools:
 

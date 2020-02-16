@@ -3,7 +3,6 @@ __all__ = ["ProjectPEP517HookCallerMixin"]
 import logging
 import pathlib
 import re
-import tarfile
 
 import cached_property
 import pep517.wrappers
@@ -29,22 +28,10 @@ class ProjectPEP517HookCallerMixin(
             runner=pep517.wrappers.quiet_subprocess_runner,
         )
 
-    def _warn_if_pyproject_toml_not_present(self, target: str):
-        with tarfile.open(self.root.joinpath("dist", target)) as tf:
-            if any(PYPROJECT_TOML_PATTERN.match(n) for n in tf.getnames()):
-                return
-        logger.warn(
-            "pyproject.toml not found in `%s`. Add the following to "
-            "your `MANIFEST.in`:\n\ninclude pyproject.toml\n\n"
-            "See: https://github.com/pypa/setuptools/issues/1632\n",
-            target,
-        )
-
     def build_sdist(self, env: BuildEnv) -> pathlib.Path:
         requirements = self.hooks.get_requires_for_build_sdist()
         self.install_build_requirements(env, requirements)
         target = self.hooks.build_sdist(self.root.joinpath("dist"))
-        self._warn_if_pyproject_toml_not_present(target)
         return self.root.joinpath("dist", target)
 
     def build_wheel(self, env: BuildEnv) -> pathlib.Path:
