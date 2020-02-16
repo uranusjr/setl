@@ -80,7 +80,9 @@ def _list_installed(env: BuildEnv) -> Dict[str, str]:
         "--format=json",
         *(f"--path={p}" for p in env.libdirs),
     ]
-    output = subprocess.check_output(args, text=True).strip()
+    env = os.environ.copy()
+    env["PIP_DISABLE_PIP_VERSION_CHECK"] = "true"
+    output = subprocess.check_output(args, env=env, text=True).strip()
     return {
         canonicalize_name(e["name"]): e["version"]
         for e in json.loads(output)
