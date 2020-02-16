@@ -20,6 +20,10 @@ def _get_name(f: Iterator[str]) -> Optional[str]:
     return None
 
 
+# TODO: Reliying on Setuptools being present in the isolated build
+# environment. This is fine since Setl is strictly a Setuptools frontend, but
+# for a generic PEP 517 frontend we need another way to find the .egg-info
+# directory. The .egg-link thing is very tricky though...
 _GET_EGG_INFO_LOCATION_CODE = """
 import os
 import sys
