@@ -10,7 +10,7 @@ import pathlib
 import shutil
 import subprocess
 
-from typing import Dict, Iterator, Optional, Sequence, Set
+from typing import Dict, Iterable, Iterator, Optional, Set
 
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
@@ -156,7 +156,7 @@ class ProjectBuildManagementMixin(ProjectMetadataMixin):
         if getattr(env, "_should_delete", False):
             shutil.rmtree(env.root)
 
-    def install_build_requirements(self, env: BuildEnv, reqs: Sequence[str]):
+    def install_build_requirements(self, env: BuildEnv, reqs: Iterable[str]):
         reqs = [r for r in reqs if not _is_req_met(r, _list_installed(env))]
         if not reqs:
             return

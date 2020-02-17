@@ -22,7 +22,7 @@ def _evaluate_marker(
 
 def _iter_requirements(
     f: Iterator[str], key: str, extras: Collection[str]
-) -> Iterator[packaging.requirements.Requirement]:
+) -> Iterator[str]:
     """Hand-rolled implementation to read ``*.dist-info/METADATA``.
 
     I don't want to pull in distlib for this (it's not even good at this). The
@@ -37,14 +37,11 @@ def _iter_requirements(
         if k.lower() != key:
             continue
         try:
-            requirement = packaging.requirements.Requirement(v)
+            r = packaging.requirements.Requirement(v)
         except ValueError:
             continue
-        if not requirement.marker:
-            yield requirement
-            continue
-        if _evaluate_marker(requirement.marker, extras):
-            yield requirement
+        if not r.marker or _evaluate_marker(r.marker, extras):
+            yield v
 
 
 class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
@@ -90,11 +87,7 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
         4. Call `setup.py develop --no-deps` so we install the package itself
            without pip machinery.
         """
-        requirements = list(
-            _iter_requirements(
-                self.iter_metadata_for_development(env), "requires-dist", []
-            )
-        )
+        metadata = self.iter_metadata_for_development(env)
+        requirements = _iter_requirements(metadata, "requires-dist", [])
         self.install_build_requirements(env, requirements)
-
         self.setuppy(env, "develop", "--no-deps")
