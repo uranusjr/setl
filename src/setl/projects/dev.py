@@ -1,6 +1,9 @@
 __all__ = ["ProjectDevelopMixin"]
 
-from typing import Collection, Iterator, Optional
+import os
+import subprocess
+
+from typing import Collection, Iterable, Iterator, Optional
 
 import packaging.markers
 import packaging.requirements
@@ -69,6 +72,12 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
         with container.joinpath(target, "METADATA").open(encoding="utf8") as f:
             yield from f
 
+    def install_run_requirements(self, env: BuildEnv, reqs: Iterable[str]):
+        if not reqs:
+            return
+        args = [os.fspath(env.interpreter), "-m", "pip", "install", *reqs]
+        subprocess.check_call(args)
+
     def install_for_development(self, env: BuildEnv):
         """Install the project for development.
 
@@ -89,5 +98,5 @@ class ProjectDevelopMixin(ProjectPEP517HookCallerMixin, ProjectSetupMixin):
         """
         metadata = self.iter_metadata_for_development(env)
         requirements = _iter_requirements(metadata, "requires-dist", [])
-        self.install_build_requirements(env, requirements)
+        self.install_run_requirements(env, requirements)
         self.setuppy(env, "develop", "--no-deps")
